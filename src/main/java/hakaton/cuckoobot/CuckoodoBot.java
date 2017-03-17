@@ -1,3 +1,5 @@
+package hakaton.cuckoobot;
+
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -8,7 +10,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  *         Date: 03/17/2017
  *         Time: 20:03
  */
-public class ToDoListBot extends TelegramLongPollingBot {
+public class CuckoodoBot extends TelegramLongPollingBot {
     public String getBotToken() {
         return "";
     }
