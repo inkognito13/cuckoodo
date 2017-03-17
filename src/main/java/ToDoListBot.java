@@ -27,6 +27,6 @@ public class ToDoListBot extends TelegramLongPollingBot {
     }
 
     public String getBotUsername() {
-        return "ToDoListBot";
+        return "cuckodoobot";
     }
 }
