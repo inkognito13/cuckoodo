@@ -1,7 +1,5 @@
 language: java
 jdk:
   - oraclejdk8
-script: 
-  - mvn dependency:resolve
-  - mvn verify
+script:
   - mvn package
