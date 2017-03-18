@@ -18,7 +18,7 @@ public class Issue {
         this.id = System.currentTimeMillis();
         this.groupId = groupId;
         this.text = text;
-        this.assignee = "(all)";
+        this.assignee = "all";
         this.repeat = null;
         this.isDone = false;
     }
