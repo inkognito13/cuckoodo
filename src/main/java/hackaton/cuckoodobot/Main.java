@@ -15,7 +15,7 @@ public class Main {
 
     private final static String BOT_TOKEN = "BOT_TOKEN";
 
-        public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
 
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
