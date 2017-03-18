@@ -1,4 +1,4 @@
-package hakaton.cuckoobot;
+package hackaton.cuckoodobot;
 
 import org.quartz.Scheduler;
 import org.quartz.impl.StdSchedulerFactory;
@@ -12,9 +12,9 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  *         Time: 19:58
  */
 public class Main {
-    
+
     private final static String BOT_TOKEN = "BOT_TOKEN";
-    
+
         public static void main(String[] args) throws Exception{
 
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();

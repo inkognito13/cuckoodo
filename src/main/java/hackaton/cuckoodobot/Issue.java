@@ -1,4 +1,4 @@
-package hakaton.cuckoobot;
+package hackaton.cuckoodobot;
 
 
 /**
@@ -43,7 +43,7 @@ public class Issue {
     public void setRepeat(Repeat repeat) {
         this.repeat = repeat;
     }
-    
+
     public boolean schedulable(){
         return repeat!=null;
     }
