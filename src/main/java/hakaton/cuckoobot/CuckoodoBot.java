@@ -11,8 +11,15 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  *         Time: 20:03
  */
 public class CuckoodoBot extends TelegramLongPollingBot {
+    
+    private String botToken;
+
+    public CuckoodoBot(String botToken) {
+        this.botToken = botToken;
+    }
+
     public String getBotToken() {
-        return "";
+        return botToken;
     }
 
     public void onUpdateReceived(Update update) {
