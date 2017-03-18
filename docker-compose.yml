@@ -2,8 +2,10 @@ version: '2.1'
 services:
   bot:
     container_name: bot
+    user: root
     build:
       context: bot
-    volumes:
-      - ./:/code
-    entrypoint: /code/bot/entrypoint.sh
+      args:
+        - RELEASE=${RELEASE}
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
