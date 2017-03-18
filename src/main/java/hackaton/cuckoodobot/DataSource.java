@@ -1,13 +1,9 @@
 package hackaton.cuckoodobot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
- * @author Dmitry Tarasov, Anastasia Yarunina
+ * @author Dmitry Tarasov, Anastasia Yarunina(@crazzysun)
  *         Date: 03/18/2017
  *         Time: 08:54
  */
@@ -15,7 +11,7 @@ public class DataSource {
     //<groupId:<issueId:issue>>
     Map<Long, Map<Long, Issue>> storage = new HashMap<Long, Map<Long, Issue>>();
 
-    public Issue getIssue(Long id, Long groupId) {
+    public Issue getIssue(Long id, long groupId) {
         if (storage.containsKey(groupId)) {
             Map<Long, Issue> groupMessages = storage.get(groupId);
             if (groupMessages.containsKey(id)) {
@@ -26,7 +22,7 @@ public class DataSource {
         return null;
     }
 
-    public List<Issue> getIssueForGroup(Long groupId) {
+    List<Issue> getIssueForGroup(long groupId) {
         Map<Long, Issue> groupMessages = storage.get(groupId);
         if (groupMessages == null) {
             groupMessages = new TreeMap<Long, Issue>();
@@ -35,7 +31,7 @@ public class DataSource {
         return new ArrayList<Issue>(groupMessages.values());
     }
 
-    public Issue addIssue(Issue issue) {
+    Issue addIssue(Issue issue) {
         Map<Long, Issue> groupMessages = storage.get(issue.getGroupId());
         if (groupMessages == null) {
             groupMessages = new TreeMap<Long, Issue>();
@@ -45,7 +41,7 @@ public class DataSource {
         return issue;
     }
 
-    public boolean doneIssue(int idx, Long groupId) {
+    boolean doneIssue(int idx, long groupId) {
         if (storage.containsKey(groupId)) {
             Map<Long, Issue> groupMessages = storage.get(groupId);
 
@@ -61,7 +57,7 @@ public class DataSource {
         return false;
     }
 
-    public Issue deleteIssue(int idx, long groupId) {
+    Issue deleteIssue(int idx, long groupId) {
         if (storage.containsKey(groupId)) {
             Map<Long, Issue> groupMessages = storage.get(groupId);
 
@@ -76,4 +72,22 @@ public class DataSource {
         }
         return null;
     }
+
+    boolean assigneeIssue(int idx, String newUser, long groupId) {
+        if (storage.containsKey(groupId)) {
+            Map<Long, Issue> groupMessages = storage.get(groupId);
+
+            if (groupMessages.size() >= idx) {
+                for (Long key : groupMessages.keySet()) {
+                    idx--;
+                    if (idx == 0) {
+                        groupMessages.get(key).setAssignee(newUser);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 }
