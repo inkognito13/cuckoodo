@@ -17,6 +17,7 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import java.util.IntSummaryStatistics;
 import java.util.List;
 
 import static org.quartz.TriggerBuilder.*;
@@ -34,7 +35,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     private final static String[] ADD = {"add", "добавить"};
     private final static String[] LIST = {"list", "список", "все"};
-    private final static String[] DONE = {"done", "готово", "готов", "сделаль"};
+    private final static String[] DONE = {"done", "готово", "готов", "сделаль", "сделать", "сделано"};
     private final static String[] DELETE = {"del", "удалить"};
 
     public CuckoodoBot(String botToken, Scheduler scheduler) {
@@ -63,30 +64,36 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             } else if (startWith(DONE, messageText)) {
                 doneIssue(message);
             } else if (startWith(DELETE, messageText)) {
-
+                deleteIssue(message);
             }
         }
     }
 
+    private void deleteIssue(Message message) {
+        long groupId = message.getChatId();
+        int idx = Integer.parseInt(deleteCommand(message.getText()));
+        Issue res = dataSource.deleteIssue(idx, groupId);
+        if (res != null) {
+            sendMessage("Запись была удалена:\n\r" + res.toString(), groupId);
+        } else {
+            sendMessage("Не могу это удалить.", groupId);
+        }
+    }
 
     private void addIssue(Message message) {
         String messageWithAssignee = deleteCommand(message.getText());
         String[] messageArr = messageWithAssignee.split(" ");
         String lastWord = messageArr[messageArr.length - 1];
-
-        String assignee;
-        String messageText;
+        Issue issue;
 
         if (lastWord.startsWith("@")) {
-            assignee = messageArr[messageArr.length - 1].substring(1);
-            messageText = messageWithAssignee.substring(0, messageWithAssignee.length() - assignee.length() + 1);
+            String assignee = messageArr[messageArr.length - 1].substring(1);
+            String messageText = messageWithAssignee.substring(0, messageWithAssignee.length() - assignee.length() - 1);
+            issue = new Issue(message.getChatId(), messageText, assignee);
         } else {
-            assignee = "(all)";
-            messageText = messageWithAssignee;
+            issue = new Issue(message.getChatId(), messageWithAssignee);
         }
 
-        Issue issue = new Issue(message.getChatId(), messageText);
-        issue.setAssignee(assignee);
         dataSource.addIssue(issue);
         sendMessage("Добавлена заметка для " + issue.getAssignee(), message.getChatId());
     }
@@ -111,7 +118,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         if (dataSource.doneIssue(idx, groupId)) {
             listIssue(message);
         } else {
-            sendMessage("Что-то пошло не так :(", message.getChatId());
+            sendMessage("Что-то пошло не так \uD83D\uDCA9", message.getChatId());
         }
     }
 
@@ -154,7 +161,8 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private String formatIssue(Issue issue, int idx) {
         String done = (issue.getDone()) ? "\u2705" : "\uD83D\uDCCC";
 
-        return done + idx + ". " + issue.getText() + " [" + issue.getAssignee() + "]";
+//        return "Ответственный: " + issue.getAssignee() + "\n\r" + done + idx + ". " + issue.getText();
+        return done + idx + ". " + issue.getText() + " @" + issue.getAssignee();
     }
 
 //      TODO

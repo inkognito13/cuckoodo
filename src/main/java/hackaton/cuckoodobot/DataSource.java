@@ -60,4 +60,20 @@ public class DataSource {
 
         return false;
     }
+
+    public Issue deleteIssue(int idx, long groupId) {
+        if (storage.containsKey(groupId)) {
+            Map<Long, Issue> groupMessages = storage.get(groupId);
+
+            if (groupMessages.size() >= idx) {
+                for (Long key : groupMessages.keySet()) {
+                    idx--;
+                    if (idx == 0) {
+                        return groupMessages.remove(key);
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
