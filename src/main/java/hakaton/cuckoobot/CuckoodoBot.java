@@ -67,8 +67,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
     
     private void addIssue(Message message){
-        String messageText = message.getText();
-        String reminderText = messageText.replaceFirst("добавить","").trim();
+        String reminderText = deleteCommand(message.getText());
         System.out.println("Adding with text="+reminderText);
         Issue issue = new Issue();
         issue.setOwner(message.getChatId().toString());
@@ -84,7 +83,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-    
+
     private void listIssue(Message message){
         String ownerId = message.getChatId().toString();
 
@@ -156,6 +155,21 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             }
         }
         return false;
+    }
+
+    private String deleteCommand(String rawValue) {
+        String[] arr = rawValue.split(" ");
+        
+        if(arr.length > 1) {
+            String ans = arr[1];
+
+            for (int i = 2; i < arr.length; i++) {
+                ans += " " + arr[i];
+            }
+            return ans;
+        }
+        
+        return "";
     }
 
     public class IssueJob implements Job {
