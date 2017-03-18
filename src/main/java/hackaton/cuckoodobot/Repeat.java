@@ -1,4 +1,4 @@
-package hakaton.cuckoobot;
+package hackaton.cuckoodobot;
 
 import java.util.Calendar;
 
@@ -9,7 +9,7 @@ import java.util.Calendar;
  */
 public class Repeat {
     private Calendar time;
-    
+
     public String getCron(){
         return "";
     }

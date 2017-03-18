@@ -1,4 +1,4 @@
-package hakaton.cuckoobot;
+package hackaton.cuckoodobot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,14 +13,14 @@ import java.util.UUID;
  *         Time: 08:54
  */
 public class DataSource {
-    
+
     Map<String,Map<String,Issue>> storage = new HashMap<String, Map<String, Issue>>();
-    
-    
+
+
     public Issue getIssue(String id, String groupId){
         return null;
     }
-    
+
     public List<Issue> getIssueForGroup(String groupId){
         Map<String,Issue> group = storage.get(groupId);
         if (group==null){
@@ -29,7 +29,7 @@ public class DataSource {
         }
         return new ArrayList<Issue>(group.values());
     }
-    
+
     public Issue addIssue(Issue issue){
         Map<String,Issue> group = storage.get(issue.getOwner());
         if (group==null){
@@ -40,7 +40,7 @@ public class DataSource {
         group.put(issue.getId(),issue);
         return issue;
     }
-    
+
     private String generateId(){
         return System.currentTimeMillis()+"";
     }

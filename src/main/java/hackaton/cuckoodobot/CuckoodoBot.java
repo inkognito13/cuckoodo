@@ -1,4 +1,4 @@
-package hakaton.cuckoobot;
+package hackaton.cuckoodobot;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.Job;
@@ -27,11 +27,11 @@ import static org.quartz.TriggerBuilder.*;
  *         Time: 20:03
  */
 public class CuckoodoBot extends TelegramLongPollingBot {
-    
+
     private String botToken;
     private Scheduler scheduler;
     private DataSource dataSource;
-    
+
     private final static String[] ADD = {"add","добавить"};
     private final static String[] LIST = {"list","список","все"};
     private final static String[] DONE = {"done","готово","сделаль"};
@@ -49,23 +49,23 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            
+
             Message message = update.getMessage();
 
             String messageText = message.getText();
-            
+
             if (startWith(ADD,messageText)){
-                addIssue(message);    
+                addIssue(message);
             }else if (startWith(LIST,messageText)){
                 listIssue(message);
             }else if (startWith(DONE,messageText)){
-                
+
             }else if (startWith(DELETE,messageText)){
-                
+
             }
         }
     }
-    
+
     private void addIssue(Message message){
         String reminderText = deleteCommand(message.getText());
         System.out.println("Adding with text="+reminderText);
@@ -100,9 +100,9 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-    
-    
-    
+
+
+
     private String formatIssuesList(List<Issue> issues){
         StringBuilder builder = new StringBuilder();
         if (issues.isEmpty()){
@@ -113,17 +113,17 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             builder.append(issues.get(i-1).getText());
             builder.append("\n\r");
         }
-        
+
         return builder.toString();
     }
-    
-    
+
+
     private void addScheduledIssue(Issue issue){
-        
+
         if (issue.schedulable()){
-            
+
             issue = dataSource.addIssue(issue);
-            
+
             JobDetail jobDetail = JobBuilder.newJob(IssueJob.class)
                     .withIdentity(new JobKey(issue.getId(),issue.getOwner()))
                     .build();
@@ -133,12 +133,12 @@ public class CuckoodoBot extends TelegramLongPollingBot {
                     .startNow()
                     .withSchedule(CronScheduleBuilder.cronSchedule(issue.getRepeat().getCron()))
                     .build();
-            
+
             try {
                 scheduler.scheduleJob(jobDetail,trigger);
             }catch (SchedulerException e){
                 e.printStackTrace();
-            }    
+            }
         }else{
             dataSource.addIssue(issue);
         }
@@ -147,7 +147,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     public String getBotUsername() {
         return "cuckodoobot";
     }
-    
+
     private boolean startWith(String[] commands, String message){
         for (String command:commands){
             if (message.startsWith("/"+command)){
@@ -159,7 +159,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     private String deleteCommand(String rawValue) {
         String[] arr = rawValue.split(" ");
-        
+
         if(arr.length > 1) {
             String ans = arr[1];
 
@@ -168,14 +168,14 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             }
             return ans;
         }
-        
+
         return "";
     }
 
     public class IssueJob implements Job {
         public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
             JobKey key = jobExecutionContext.getJobDetail().getKey();
-            
+
             Issue issue = dataSource.getIssue(key.getName(),key.getGroup());
 
             SendMessage message = new SendMessage()
