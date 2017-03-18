@@ -18,7 +18,7 @@ public class Issue {
         this.id = System.currentTimeMillis();
         this.groupId = groupId;
         this.text = text;
-        this.assignee = "all";
+        this.assignee = "everywhere";
         this.repeat = null;
         this.isDone = false;
     }
@@ -83,5 +83,10 @@ public class Issue {
 
     public void setDone(Boolean done) {
         isDone = done;
+    }
+
+    @Override
+    public String toString() {
+        return this.getText() + " @" + this.getAssignee();
     }
 }
