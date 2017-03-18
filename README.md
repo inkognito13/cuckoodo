@@ -38,6 +38,7 @@ Elastic Telegram task-manager/reminder for chats
 
 ### User story #3:
   User could get a list of all issues or filtered by assignee.
+  If user want to list his own issues, add self instead of assignee
 
   `/list`
   `/list @vasya`
