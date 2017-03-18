@@ -1,6 +1,7 @@
 package hackaton.cuckoodobot;
 
 import org.quartz.CronScheduleBuilder;
+import org.quartz.DateBuilder;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -9,6 +10,8 @@ import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -17,8 +20,12 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
-import java.util.IntSummaryStatistics;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.quartz.TriggerBuilder.*;
 
@@ -31,17 +38,26 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     private String botToken;
     private Scheduler scheduler;
-    private DataSource dataSource;
+    private static DataSource dataSource;
+    private static CuckoodoBot bot;
 
-    private final static String[] ADD = {"add", "добавить"};
+    private final static String[] ADD = {"add", "добавить","напомни"};
     private final static String[] LIST = {"list", "список", "все"};
     private final static String[] DONE = {"done", "готово", "готов", "сделаль", "сделать", "сделано"};
     private final static String[] DELETE = {"del", "удалить"};
+    private final static String[] DAY = {"day", "день"};
+    private final static String[] HOUR = {"hour", "час"};
+    private final static String[] MINUTE = {"min", "минут"};
+    private final static String[] SECOND = {"sec", "секунд","секунду"};
+
+
+    private final Pattern intervalPattern = Pattern.compile("(\\d{1,2} d)?(\\d{1,2} h)?(\\d{1,2} min)?");
 
     public CuckoodoBot(String botToken, Scheduler scheduler) {
         this.botToken = botToken;
         this.scheduler = scheduler;
         this.dataSource = new DataSource();
+        this.bot = this;
     }
 
     public String getBotToken() {
@@ -49,7 +65,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
     public String getBotUsername() {
-        return "cuckodoobot";
+        return "cuckodootest_bot";
     }
 
     public void onUpdateReceived(Update update) {
@@ -90,11 +106,58 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             String assignee = messageArr[messageArr.length - 1].substring(1);
             String messageText = messageWithAssignee.substring(0, messageWithAssignee.length() - assignee.length() - 1);
             issue = new Issue(message.getChatId(), messageText, assignee);
+            messageArr = messageText.split(" ");
         } else {
             issue = new Issue(message.getChatId(), messageWithAssignee);
         }
 
+        int interval = 0;
+        
+        List<String> messagePartsWithoutInterval = new ArrayList<String>(Arrays.asList(messageArr));  
+
+        for (int i = 0; i < messageArr.length; i++) {
+            for (String day : DAY) {
+                if (messageArr[i].equals(day)) {
+                    interval += Integer.parseInt(messageArr[i - 1]) * 24 * 60 * 60;
+                    messagePartsWithoutInterval.remove(messageArr[i]);
+                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                }
+            }
+            for (String hour : HOUR) {
+                if (messageArr[i].equals(hour)) {
+                    interval += Integer.parseInt(messageArr[i - 1]) * 60 * 60;
+                    messagePartsWithoutInterval.remove(messageArr[i]);
+                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                }
+            }
+            for (String minute : MINUTE) {
+                if (messageArr[i].equals(minute)) {
+                    interval += Integer.parseInt(messageArr[i - 1]) * 60;
+                    messagePartsWithoutInterval.remove(messageArr[i]);
+                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                }
+            }
+            for (String second : SECOND) {
+                if (messageArr[i].equals(second)) {
+                    interval += Integer.parseInt(messageArr[i - 1]);
+                    messagePartsWithoutInterval.remove(messageArr[i]);
+                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                }
+            }
+        }
+        
+        if (interval > 0) {
+            issue.setRepeat(new Repeat(interval));
+            String resultMessage = messagePartsWithoutInterval.get(0);
+            for (int i=1;i<messagePartsWithoutInterval.size();i++){
+                resultMessage+=" "+messagePartsWithoutInterval.get(i-1);
+            }
+            issue.setText(resultMessage);
+        }
         dataSource.addIssue(issue);
+        if (issue.getRepeat()!=null){
+            scheduleIssue(issue);
+        }
         sendMessage("Добавлена заметка для " + issue.getAssignee(), message.getChatId());
     }
 
@@ -165,50 +228,45 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         return done + idx + ". " + issue.getText() + " @" + issue.getAssignee();
     }
 
-//      TODO
-//
-//    private void addScheduledIssue(Issue issue) {
-//
-//        if (issue.schedulable()) {
-//
-//            issue = dataSource.addIssue(issue);
-//
-//            JobDetail jobDetail = JobBuilder.newJob(IssueJob.class)
-//                    .withIdentity(new JobKey(issue.getId(), issue.getAssignee()))
-//                    .build();
-//
-//            Trigger trigger = newTrigger()
-//                    .withIdentity(new TriggerKey(issue.getId(), issue.getAssignee()))
-//                    .startNow()
-//                    .withSchedule(CronScheduleBuilder.cronSchedule(issue.getRepeat().getCron()))
-//                    .build();
-//
-//            try {
-//                scheduler.scheduleJob(jobDetail, trigger);
-//            } catch (SchedulerException e) {
-//                e.printStackTrace();
-//            }
-//        } else {
-//            dataSource.addIssue(issue);
-//        }
-//    }
+    private static String formatIssue(Issue issue) {
+        return issue.getText() + " @" + issue.getAssignee();
+    }
+
+    private void scheduleIssue(Issue issue) {
+
+            JobDetail jobDetail = JobBuilder.newJob(IssueJob.class)
+                    .withIdentity(new JobKey(issue.getId().toString(), issue.getGroupId().toString()))
+                    .build();
+
+            Trigger trigger = newTrigger()
+                    .withIdentity(new TriggerKey(issue.getId().toString(), issue.getGroupId().toString()))
+                    .forJob(jobDetail)
+                    .startAt(DateBuilder.futureDate(issue.getRepeat().getTime(), DateBuilder.IntervalUnit.SECOND))
+                    .build();
+
+            try {
+                scheduler.scheduleJob(jobDetail, trigger);
+            } catch (SchedulerException e) {
+                e.printStackTrace();
+            }
+    }
 
 
-//    public class IssueJob implements Job {
-//        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-//            JobKey key = jobExecutionContext.getJobDetail().getKey();
-//
-//            Issue issue = dataSource.getIssue(key.getName(), key.getGroup());
-//
-//            SendMessage message = new SendMessage()
-//                    .setChatId(issue.getAssignee())
-//                    .setText(issue.getText());
-//            try {
-//                sendMessage(message);
-//            } catch (TelegramApiException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
+    public static class IssueJob implements Job {
+        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+            JobKey key = jobExecutionContext.getJobDetail().getKey();
+
+            Issue issue = dataSource.getIssue(Long.parseLong(key.getName()),Long.parseLong(key.getGroup()));
+
+            SendMessage message = new SendMessage()
+                    .setChatId(issue.getGroupId())
+                    .setText(formatIssue(issue));
+            try {
+                bot.sendMessage(message);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }

@@ -8,9 +8,17 @@ import java.util.Calendar;
  *         Time: 11:07
  */
 public class Repeat {
-    private Calendar time;
+    private int time;
 
-    public String getCron(){
-        return "";
+    public Repeat(int time) {
+        this.time = time;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
     }
 }
