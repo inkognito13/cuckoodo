@@ -59,7 +59,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             String messageText = message.getText();
 
             if (startWith(ADD, messageText)) {
-                //  addIssue(message);
+                addIssue(message);
             } else if (startWith(LIST, messageText)) {
                 //  listIssue(message);
             } else if (startWith(DONE, messageText)) {
@@ -69,6 +69,32 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             }
         }
     }
+
+    private void addIssue(Message message) {
+        String messageWithAssignee = deleteCommand(message.getText());
+
+        String[] messageArr = messageWithAssignee.split(" ");
+
+        String lastWord = messageArr[messageArr.length - 1];
+
+        String assignee;
+        String messageText;
+
+        if (lastWord.startsWith("@")) {
+            assignee = messageArr[messageArr.length - 1].substring(1);
+            messageText = messageWithAssignee.substring(0, messageWithAssignee.length() - assignee.length() + 1);
+        } else {
+            assignee = "(all)";
+            messageText = messageWithAssignee;
+        }
+
+
+        Issue issue = new Issue(message.getChatId(), messageText);
+        issue.setAssignee(assignee);
+        dataSource.addIssue(issue);
+        sendMessage("Добавлена заметка для " + issue.getAssignee(), message.getChatId());
+    }
+
 
 //    private void listIssue(Message message) {
 //        String ownerId = message.getChatId().toString();
