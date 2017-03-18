@@ -31,6 +31,11 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private String botToken;
     private Scheduler scheduler;
     private DataSource dataSource;
+    
+    private final static String[] ADD = {"add","добавить"};
+    private final static String[] LIST = {"list","список","все"};
+    private final static String[] DONE = {"done","готово","сделаль"};
+    private final static String[] DELETE = {"del","удалить"};
 
     public CuckoodoBot(String botToken, Scheduler scheduler) {
         this.botToken = botToken;
@@ -49,10 +54,14 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
             String messageText = message.getText();
             
-            if (messageText.startsWith("/добавить")){
+            if (startWith(ADD,messageText)){
                 addIssue(message);    
-            }else if (messageText.contains("/список")){
+            }else if (startWith(LIST,messageText)){
                 listIssue(message);
+            }else if (startWith(DONE,messageText)){
+                
+            }else if (startWith(DELETE,messageText)){
+                
             }
         }
     }
@@ -138,6 +147,15 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     public String getBotUsername() {
         return "cuckodoobot";
+    }
+    
+    private boolean startWith(String[] commands, String message){
+        for (String command:commands){
+            if (message.startsWith("/"+command)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public class IssueJob implements Job {
