@@ -27,6 +27,9 @@ Elastic Telegram task-manager/reminder for chats
 
 ### User story #1:
   User wants to change an assignee for an issue.
+  If user wants to assign issue to itself, add self instead of assignee.
+  
+  or /self
 
 ### User story #2:
   User could delete an issue.
