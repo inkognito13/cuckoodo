@@ -48,52 +48,64 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             Message message = update.getMessage();
 
             String messageText = message.getText();
-
             
-
-            if (messageText.contains("добавить")){
-                String reminderText = messageText.replaceFirst("добавить","").trim();
-                System.out.println("Adding with text="+reminderText);
-                Issue issue = new Issue();
-                issue.setOwner(message.getChatId().toString());
-                issue.setText(reminderText);
-                dataSource.addIssue(issue);
-                try {
-                    sendMessage(
-                            new SendMessage()
-                                    .setChatId(message.getChatId())
-                                    .setText("Успешно добавлено напоминание "+issue.getText())
-                    );
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-            }else if (messageText.contains("список")){
-                
-                String ownerId = message.getChatId().toString();
-                
-                List<Issue> issues = dataSource.getIssueForGroup(ownerId);
-
-                try {
-                    sendMessage(
-                            new SendMessage()
-                                    .setChatId(message.getChatId())
-                                    .setText(formatIssuesList(issues)
-                                    )
-                    );
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
+            if (messageText.startsWith("/добавить")){
+                addIssue(message);    
+            }else if (messageText.contains("/список")){
+                listIssue(message);
             }
         }
     }
     
+    private void addIssue(Message message){
+        String messageText = message.getText();
+        String reminderText = messageText.replaceFirst("добавить","").trim();
+        System.out.println("Adding with text="+reminderText);
+        Issue issue = new Issue();
+        issue.setOwner(message.getChatId().toString());
+        issue.setText(reminderText);
+        dataSource.addIssue(issue);
+        try {
+            sendMessage(
+                    new SendMessage()
+                            .setChatId(message.getChatId())
+                            .setText("Успешно добавлено напоминание "+issue.getText())
+            );
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void listIssue(Message message){
+        String ownerId = message.getChatId().toString();
+
+        List<Issue> issues = dataSource.getIssueForGroup(ownerId);
+
+        try {
+            sendMessage(
+                    new SendMessage()
+                            .setChatId(message.getChatId())
+                            .setText(formatIssuesList(issues)
+                            )
+            );
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    
+    
     private String formatIssuesList(List<Issue> issues){
         StringBuilder builder = new StringBuilder();
+        if (issues.isEmpty()){
+            return "У вас нет задач";
+        }
         for (int i=1;i<=issues.size();i++){
             builder.append(i+") ");
             builder.append(issues.get(i-1).getText());
             builder.append("\n\r");
         }
+        
         return builder.toString();
     }
     
