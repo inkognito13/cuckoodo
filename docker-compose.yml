@@ -1,0 +1,9 @@
+version: '2.1'
+services:
+  bot:
+    container_name: bot
+    build:
+      context: bot
+    volumes:
+      - ./:/code
+    entrypoint: /code/bot/entrypoint.sh
