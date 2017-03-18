@@ -7,17 +7,46 @@ package hackaton.cuckoodobot;
  *         Time: 10:58
  */
 public class Issue {
-    private String id;
+    private Long id;
+    private Long groupId;
     private String text;
-    private String owner;
+    private String assignee;
     private Repeat repeat;
+    private Boolean isDone;
 
-    public String getId() {
+    public Issue(Long groupId, String text) {
+        this.id = System.currentTimeMillis();
+        this.groupId = groupId;
+        this.text = text;
+        this.assignee = "(all)";
+        this.repeat = null;
+        this.isDone = false;
+    }
+
+    public Issue(Long groupId, String text, String assignee) {
+        this.id = System.currentTimeMillis();
+        this.groupId = groupId;
+        this.text = text;
+        this.assignee = assignee;
+        this.repeat = null;
+        this.isDone = false;
+    }
+
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 
     public String getText() {
@@ -28,12 +57,12 @@ public class Issue {
         this.text = text;
     }
 
-    public String getOwner() {
-        return owner;
+    public String getAssignee() {
+        return assignee;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setAssignee(String assignee) {
+        this.assignee = assignee;
     }
 
     public Repeat getRepeat() {
@@ -44,7 +73,15 @@ public class Issue {
         this.repeat = repeat;
     }
 
-    public boolean schedulable(){
-        return repeat!=null;
+    public boolean schedulable() {
+        return repeat != null;
+    }
+
+    public Boolean getDone() {
+        return isDone;
+    }
+
+    public void setDone(Boolean done) {
+        isDone = done;
     }
 }
