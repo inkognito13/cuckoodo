@@ -53,9 +53,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-
             Message message = update.getMessage();
-
             String messageText = message.getText();
 
             if (startWith(ADD, messageText)) {
@@ -69,6 +67,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             }
         }
     }
+
 
     private void addIssue(Message message) {
         String messageWithAssignee = deleteCommand(message.getText());
@@ -106,12 +105,11 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         sendMessage(res.toString(), message.getChatId());
     }
 
-
     private void doneIssue(Message message) {
         long groupId = message.getChatId();
         int idx = Integer.parseInt(deleteCommand(message.getText()));
         if (dataSource.doneIssue(idx, groupId)) {
-            sendMessage("Сделано!", message.getChatId());
+            listIssue(message);
         } else {
             sendMessage("Что-то пошло не так :(", message.getChatId());
         }
@@ -160,7 +158,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
 //      TODO
-    //
+//
 //    private void addScheduledIssue(Issue issue) {
 //
 //        if (issue.schedulable()) {
