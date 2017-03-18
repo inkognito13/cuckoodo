@@ -34,7 +34,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     private final static String[] ADD = {"add", "добавить"};
     private final static String[] LIST = {"list", "список", "все"};
-    private final static String[] DONE = {"done", "готово", "сделаль"};
+    private final static String[] DONE = {"done", "готово", "готов", "сделаль"};
     private final static String[] DELETE = {"del", "удалить"};
 
     public CuckoodoBot(String botToken, Scheduler scheduler) {
@@ -61,7 +61,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             if (startWith(ADD, messageText)) {
                 addIssue(message);
             } else if (startWith(LIST, messageText)) {
-                //  listIssue(message);
+                listIssue(message);
             } else if (startWith(DONE, messageText)) {
                 doneIssue(message);
             } else if (startWith(DELETE, messageText)) {
@@ -72,9 +72,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
     private void addIssue(Message message) {
         String messageWithAssignee = deleteCommand(message.getText());
-
         String[] messageArr = messageWithAssignee.split(" ");
-
         String lastWord = messageArr[messageArr.length - 1];
 
         String assignee;
@@ -88,30 +86,26 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             messageText = messageWithAssignee;
         }
 
-
         Issue issue = new Issue(message.getChatId(), messageText);
         issue.setAssignee(assignee);
         dataSource.addIssue(issue);
         sendMessage("Добавлена заметка для " + issue.getAssignee(), message.getChatId());
     }
 
+    private void listIssue(Message message) {
+        long groupId = message.getChatId();
 
-//    private void listIssue(Message message) {
-//        String ownerId = message.getChatId().toString();
-//
-//        List<Issue> issues = dataSource.getIssueForGroup(ownerId);
-//
-//        try {
-//            sendMessage(
-//                    new SendMessage()
-//                            .setChatId(message.getChatId())
-//                            .setText(formatIssuesList(issues)
-//                            )
-//            );
-//        } catch (TelegramApiException e) {
-//            e.printStackTrace();
-//        }
-//    }
+        List<Issue> issues = dataSource.getIssueForGroup(groupId);
+        StringBuilder res = new StringBuilder();
+        int idx = 0;
+        for (Issue issue : issues) {
+            idx++;
+            res.append(formatIssue(issue, idx)).append("\n\r");
+        }
+
+        sendMessage(res.toString(), message.getChatId());
+    }
+
 
     private void doneIssue(Message message) {
         long groupId = message.getChatId();
@@ -122,22 +116,6 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             sendMessage("Что-то пошло не так :(", message.getChatId());
         }
     }
-
-
-    private String formatIssuesList(List<Issue> issues) {
-        StringBuilder builder = new StringBuilder();
-        if (issues.isEmpty()) {
-            return "У вас нет задач";
-        }
-        for (int i = 1; i <= issues.size(); i++) {
-            builder.append(i + ") ");
-            builder.append(issues.get(i - 1).getText());
-            builder.append("\n\r");
-        }
-
-        return builder.toString();
-    }
-
 
     private boolean startWith(String[] commands, String message) {
         for (String command : commands) {
@@ -173,6 +151,12 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private String formatIssue(Issue issue, int idx) {
+        String done = (issue.getDone()) ? "\u2705" : "\uD83D\uDCCC";
+
+        return done + idx + ". " + issue.getText() + " [" + issue.getAssignee() + "]";
     }
 
 //      TODO
