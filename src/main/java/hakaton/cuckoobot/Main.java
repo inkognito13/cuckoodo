@@ -11,7 +11,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  */
 public class Main {
     
-    private final static String API_KEY_ENV_VAR_NAME = "CUCKODOO_API_KEY";
+    private final static String BOT_TOKEN = "BOT_TOKEN";
     
         public static void main(String[] args) {
 
@@ -19,7 +19,7 @@ public class Main {
 
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
             try {
-                telegramBotsApi.registerBot(new CuckoodoBot(System.getenv(API_KEY_ENV_VAR_NAME)));
+                telegramBotsApi.registerBot(new CuckoodoBot(System.getenv(BOT_TOKEN)));
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
