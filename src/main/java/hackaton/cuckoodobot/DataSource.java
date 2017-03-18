@@ -5,43 +5,59 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 
 /**
- * @author Dmitry Tarasov
+ * @author Dmitry Tarasov, Anastasia Yarunina
  *         Date: 03/18/2017
  *         Time: 08:54
  */
 public class DataSource {
+    //<groupId:<issueId:issue>>
+    Map<Long, Map<Long, Issue>> storage = new HashMap<Long, Map<Long, Issue>>();
 
-    Map<String,Map<String,Issue>> storage = new HashMap<String, Map<String, Issue>>();
+    public Issue getIssue(Long id, Long groupId) {
+        if (storage.containsKey(groupId)) {
+            Map<Long, Issue> groupMessages = storage.get(groupId);
+            if (groupMessages.containsKey(id)) {
+                return groupMessages.get(id);
+            }
+        }
 
-
-    public Issue getIssue(String id, String groupId){
         return null;
     }
 
-    public List<Issue> getIssueForGroup(String groupId){
-        Map<String,Issue> group = storage.get(groupId);
-        if (group==null){
-            group = new TreeMap<String,Issue>();
-            storage.put(groupId,group);
+    public List<Issue> getIssueForGroup(Long groupId) {
+        Map<Long, Issue> groupMessages = storage.get(groupId);
+        if (groupMessages == null) {
+            groupMessages = new TreeMap<Long, Issue>();
+            storage.put(groupId, groupMessages);
         }
-        return new ArrayList<Issue>(group.values());
+        return new ArrayList<Issue>(groupMessages.values());
     }
 
-    public Issue addIssue(Issue issue){
-        Map<String,Issue> group = storage.get(issue.getOwner());
-        if (group==null){
-            group = new TreeMap<String, Issue>();
-            storage.put(issue.getOwner(),group);
+    public Issue addIssue(Issue issue) {
+        Map<Long, Issue> groupMessages = storage.get(issue.getGroupId());
+        if (groupMessages == null) {
+            groupMessages = new TreeMap<Long, Issue>();
+            storage.put(issue.getGroupId(), groupMessages);
         }
-        issue.setId(generateId());
-        group.put(issue.getId(),issue);
+        groupMessages.put(issue.getId(), issue);
         return issue;
     }
 
-    private String generateId(){
-        return System.currentTimeMillis()+"";
+    public boolean doneIssue(int idx, Long groupId) {
+        if (storage.containsKey(groupId)) {
+            Map<Long, Issue> groupMessages = storage.get(groupId);
+
+            for (Long key : groupMessages.keySet()) {
+                idx--;
+                if (idx == 0) {
+                    groupMessages.get(key).setDone(true);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

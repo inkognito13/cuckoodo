@@ -17,16 +17,16 @@ public class Main {
 
         public static void main(String[] args) throws Exception{
 
-            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
-            scheduler.start();
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+        scheduler.start();
 
-            ApiContextInitializer.init();
+        ApiContextInitializer.init();
 
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
-            try {
-                telegramBotsApi.registerBot(new CuckoodoBot(System.getenv(BOT_TOKEN),scheduler));
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+        TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
+        try {
+            telegramBotsApi.registerBot(new CuckoodoBot(System.getenv(BOT_TOKEN), scheduler));
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
+    }
 }

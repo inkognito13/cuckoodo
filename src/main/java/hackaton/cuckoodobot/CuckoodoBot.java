@@ -32,10 +32,10 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private Scheduler scheduler;
     private DataSource dataSource;
 
-    private final static String[] ADD = {"add","добавить"};
-    private final static String[] LIST = {"list","список","все"};
-    private final static String[] DONE = {"done","готово","сделаль"};
-    private final static String[] DELETE = {"del","удалить"};
+    private final static String[] ADD = {"add", "добавить"};
+    private final static String[] LIST = {"list", "список", "все"};
+    private final static String[] DONE = {"done", "готово", "сделаль"};
+    private final static String[] DELETE = {"del", "удалить"};
 
     public CuckoodoBot(String botToken, Scheduler scheduler) {
         this.botToken = botToken;
@@ -47,107 +47,69 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         return botToken;
     }
 
+    public String getBotUsername() {
+        return "cuckodoobot";
+    }
+
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
 
             Message message = update.getMessage();
 
             String messageText = message.getText();
-
+            
             if (startWith(ADD,messageText)){
-                addIssue(message);
+              //  addIssue(message);
             }else if (startWith(LIST,messageText)){
-                listIssue(message);
+              //  listIssue(message);
             }else if (startWith(DONE,messageText)){
-
+                doneIssue(message);
             }else if (startWith(DELETE,messageText)){
-
+                
             }
         }
     }
 
-    private void addIssue(Message message){
-        String reminderText = deleteCommand(message.getText());
-        System.out.println("Adding with text="+reminderText);
-        Issue issue = new Issue();
-        issue.setOwner(message.getChatId().toString());
-        issue.setText(reminderText);
-        dataSource.addIssue(issue);
-        try {
-            sendMessage(
-                    new SendMessage()
-                            .setChatId(message.getChatId())
-                            .setText("Успешно добавлено напоминание "+issue.getText())
-            );
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
+//    private void listIssue(Message message) {
+//        String ownerId = message.getChatId().toString();
+//
+//        List<Issue> issues = dataSource.getIssueForGroup(ownerId);
+//
+//        try {
+//            sendMessage(
+//                    new SendMessage()
+//                            .setChatId(message.getChatId())
+//                            .setText(formatIssuesList(issues)
+//                            )
+//            );
+//        } catch (TelegramApiException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    private void doneIssue(Message message) {
+        long groupId = message.getChatId();
+        int idx = Integer.parseInt(deleteCommand(message.getText()));
+        dataSource.doneIssue(idx, groupId);
     }
-
-    private void listIssue(Message message){
-        String ownerId = message.getChatId().toString();
-
-        List<Issue> issues = dataSource.getIssueForGroup(ownerId);
-
-        try {
-            sendMessage(
-                    new SendMessage()
-                            .setChatId(message.getChatId())
-                            .setText(formatIssuesList(issues)
-                            )
-            );
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
+    
+    
+    
     private String formatIssuesList(List<Issue> issues){
         StringBuilder builder = new StringBuilder();
-        if (issues.isEmpty()){
+        if (issues.isEmpty()) {
             return "У вас нет задач";
         }
-        for (int i=1;i<=issues.size();i++){
-            builder.append(i+") ");
-            builder.append(issues.get(i-1).getText());
+        for (int i = 1; i <= issues.size(); i++) {
+            builder.append(i + ") ");
+            builder.append(issues.get(i - 1).getText());
             builder.append("\n\r");
         }
 
         return builder.toString();
     }
 
-
-    private void addScheduledIssue(Issue issue){
-
-        if (issue.schedulable()){
-
-            issue = dataSource.addIssue(issue);
-
-            JobDetail jobDetail = JobBuilder.newJob(IssueJob.class)
-                    .withIdentity(new JobKey(issue.getId(),issue.getOwner()))
-                    .build();
-
-            Trigger trigger = newTrigger()
-                    .withIdentity(new TriggerKey(issue.getId(),issue.getOwner()))
-                    .startNow()
-                    .withSchedule(CronScheduleBuilder.cronSchedule(issue.getRepeat().getCron()))
-                    .build();
-
-            try {
-                scheduler.scheduleJob(jobDetail,trigger);
-            }catch (SchedulerException e){
-                e.printStackTrace();
-            }
-        }else{
-            dataSource.addIssue(issue);
-        }
-    }
-
-    public String getBotUsername() {
-        return "cuckodoobot";
-    }
-
+    
     private boolean startWith(String[] commands, String message){
         for (String command:commands){
             if (message.startsWith("/"+command)){
@@ -160,7 +122,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private String deleteCommand(String rawValue) {
         String[] arr = rawValue.split(" ");
 
-        if(arr.length > 1) {
+        if (arr.length > 1) {
             String ans = arr[1];
 
             for (int i = 2; i < arr.length; i++) {
@@ -171,21 +133,50 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
         return "";
     }
+//      TODO
+    //
+//    private void addScheduledIssue(Issue issue) {
+//
+//        if (issue.schedulable()) {
+//
+//            issue = dataSource.addIssue(issue);
+//
+//            JobDetail jobDetail = JobBuilder.newJob(IssueJob.class)
+//                    .withIdentity(new JobKey(issue.getId(), issue.getAssignee()))
+//                    .build();
+//
+//            Trigger trigger = newTrigger()
+//                    .withIdentity(new TriggerKey(issue.getId(), issue.getAssignee()))
+//                    .startNow()
+//                    .withSchedule(CronScheduleBuilder.cronSchedule(issue.getRepeat().getCron()))
+//                    .build();
+//
+//            try {
+//                scheduler.scheduleJob(jobDetail, trigger);
+//            } catch (SchedulerException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            dataSource.addIssue(issue);
+//        }
+//    }
 
-    public class IssueJob implements Job {
-        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-            JobKey key = jobExecutionContext.getJobDetail().getKey();
 
-            Issue issue = dataSource.getIssue(key.getName(),key.getGroup());
+//    public class IssueJob implements Job {
+//        public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+//            JobKey key = jobExecutionContext.getJobDetail().getKey();
+//
+//            Issue issue = dataSource.getIssue(key.getName(), key.getGroup());
+//
+//            SendMessage message = new SendMessage()
+//                    .setChatId(issue.getAssignee())
+//                    .setText(issue.getText());
+//            try {
+//                sendMessage(message);
+//            } catch (TelegramApiException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
-            SendMessage message = new SendMessage()
-                    .setChatId(issue.getOwner())
-                    .setText(issue.getText());
-            try {
-                sendMessage(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
