@@ -57,15 +57,15 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             Message message = update.getMessage();
 
             String messageText = message.getText();
-            
-            if (startWith(ADD,messageText)){
-              //  addIssue(message);
-            }else if (startWith(LIST,messageText)){
-              //  listIssue(message);
-            }else if (startWith(DONE,messageText)){
+
+            if (startWith(ADD, messageText)) {
+                //  addIssue(message);
+            } else if (startWith(LIST, messageText)) {
+                //  listIssue(message);
+            } else if (startWith(DONE, messageText)) {
                 doneIssue(message);
-            }else if (startWith(DELETE,messageText)){
-                
+            } else if (startWith(DELETE, messageText)) {
+
             }
         }
     }
@@ -90,12 +90,15 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private void doneIssue(Message message) {
         long groupId = message.getChatId();
         int idx = Integer.parseInt(deleteCommand(message.getText()));
-        dataSource.doneIssue(idx, groupId);
+        if (dataSource.doneIssue(idx, groupId)) {
+            sendMessage("Сделано!", message.getChatId());
+        } else {
+            sendMessage("Что-то пошло не так :(", message.getChatId());
+        }
     }
-    
-    
-    
-    private String formatIssuesList(List<Issue> issues){
+
+
+    private String formatIssuesList(List<Issue> issues) {
         StringBuilder builder = new StringBuilder();
         if (issues.isEmpty()) {
             return "У вас нет задач";
@@ -109,10 +112,10 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         return builder.toString();
     }
 
-    
-    private boolean startWith(String[] commands, String message){
-        for (String command:commands){
-            if (message.startsWith("/"+command)){
+
+    private boolean startWith(String[] commands, String message) {
+        for (String command : commands) {
+            if (message.startsWith("/" + command)) {
                 return true;
             }
         }
@@ -133,6 +136,19 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
         return "";
     }
+
+    private void sendMessage(String message, Long groupId) {
+        try {
+            sendMessage(
+                    new SendMessage()
+                            .setChatId(groupId)
+                            .setText(message)
+            );
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
 //      TODO
     //
 //    private void addScheduledIssue(Issue issue) {
