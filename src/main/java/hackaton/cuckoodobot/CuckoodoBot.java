@@ -158,7 +158,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         if (res != null) {
             sendMessage("Запись была удалена:\n\r" + res.toString());
         } else {
-            sendMessage("Не могу это удалить. /help");
+            sendMessage("Не могу это удалить. /helpMessage");
         }
     }
 
