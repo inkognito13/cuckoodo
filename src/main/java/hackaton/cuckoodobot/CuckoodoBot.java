@@ -22,7 +22,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 public class CuckoodoBot extends TelegramLongPollingBot {
 
     private final static String botUsername = "cuckoodobot";
-    private final static String[] ADD = {"add", "д", "добавить", "задача", "еще", "напомни"};
+    private final static String[] ADD = {"add", "д", "добавить", "задача", "еще", "напомни", "напомнить"};
     private final static String[] LIST = {"list", "list@" + botUsername, "c", "список", "все", "всё"};
     private final static String[] DONE = {"done", "г", "готово", "готов", "сделаль", "сделать", "сделано", "выполнено", "разделался"};
     private final static String[] DELETE = {"del", "y", "удалить", "убрать"};
@@ -67,7 +67,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             "/fullhelp - полный список команд\n" +
             "/eng - if you speak only english, use this command. But we recommend use russian text(and fullhelp).";
 
-    private static String fullHelpMessage = "/add: добавить, задача, напомнить, д\n" +
+    private static String fullHelpMessage = "/add: добавить, задача, напомнить, напомни, д\n" +
             "/list: список, все, всё, в\n" +
             "/done: готово, готов, сделать, сделано, сделаль, выполнено, разделался, г\n" +
             "/del: удалить, убрать, у\n" +
@@ -158,7 +158,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         if (res != null) {
             sendMessage("Запись была удалена:\n\r" + res.toString());
         } else {
-            sendMessage("Не могу это удалить. /helpMessage");
+            sendMessage("Не могу это удалить. /help");
         }
     }
 
