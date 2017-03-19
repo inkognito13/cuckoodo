@@ -10,6 +10,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.*;
 
 import static org.quartz.TriggerBuilder.newTrigger;
 
@@ -20,7 +21,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class CuckoodoBot extends TelegramLongPollingBot {
 
-    private final static String[] ADD = {"add", "д", "добавить", "задача", "еще"};
+    private final static String[] ADD = {"add", "д", "добавить", "задача", "еще","напомни"};
     private final static String[] LIST = {"list", "c", "список", "все", "всё"};
     private final static String[] DONE = {"done", "г", "готово", "готов", "сделаль", "сделать", "сделано", "выполнено", "разделался"};
     private final static String[] DELETE = {"del", "y", "удалить", "убрать"};
@@ -30,8 +31,13 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private final static String[] ENGLISHHELP = {"eng", "english", "englishplease"};
     private final static String[] DAY = {"day", "день"};
     private final static String[] HOUR = {"hour", "час"};
-    private final static String[] MINUTE = {"min", "минут"};
-    private final static String[] SECOND = {"sec", "секунд", "секунду"};
+    private final static String[] MINUTE = {"min", "минут","минуту","минуты"};
+    private final static String[] SECOND = {"sec", "секунд", "секунду","секунды"};
+    private final static String[] IN = {"in","after","через"};
+    private final static String[] EVERY = {"every","каждые"};
+    
+    private final static Pattern assigneePattern = Pattern.compile("@([A-Za-z])\\w+");
+    
 
     private String botToken;
     private Scheduler scheduler;
@@ -161,62 +167,87 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         String[] messageArr = messageWithAssignee.split(" ");
         Issue issue;
 
+        String[] intervalArr;
         if (assignee != null) {
-            String messageText = messageWithAssignee.substring(0, messageWithAssignee.length() - assignee.length() - 1);
-            messageArr = messageText.split(" ");
+            String messageText = messageWithAssignee.split(assignee)[0];
+            intervalArr = messageWithAssignee.split(assignee)[1].split(" ");
             issue = new Issue(groupId, messageText, assignee);
         } else {
             issue = new Issue(groupId, messageWithAssignee);
+            intervalArr = messageWithAssignee.split(" ");
         }
 
+        int timer = 0;
         int interval = 0;
+        
+        boolean timerFound = false;
+        boolean intervalFound = false;
+        
+        int temp = 0;
 
-        List<String> messagePartsWithoutInterval = new ArrayList<String>(Arrays.asList(messageArr));
+        List<String> intervalParts = new ArrayList<String>();
 
-        for (int i = 0; i < messageArr.length; i++) {
+        for (int i = intervalArr.length-1; i > 0 ; i--) {
+            for (String in:IN){
+                if (intervalArr[i].equals(in)){
+                    timerFound = true;
+                }
+            }
+
+            if (timerFound && !intervalFound){
+                timer = new Integer(temp);
+                temp = 0;
+                break;
+            }
+
+
             for (String day : DAY) {
-                if (messageArr[i].equals(day)) {
-                    interval += Integer.parseInt(messageArr[i - 1]) * 24 * 60 * 60;
-                    messagePartsWithoutInterval.remove(messageArr[i]);
-                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                if (intervalArr[i].equals(day)) {
+                    temp += Integer.parseInt(intervalArr[i - 1]) * 24 * 60 * 60;
+                    intervalParts.add(intervalArr[i - 1]);
+                    intervalParts.add(intervalArr[i]);
                 }
             }
             for (String hour : HOUR) {
-                if (messageArr[i].equals(hour)) {
-                    interval += Integer.parseInt(messageArr[i - 1]) * 60 * 60;
-                    messagePartsWithoutInterval.remove(messageArr[i]);
-                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                if (intervalArr[i].equals(hour)) {
+                    temp += Integer.parseInt(intervalArr[i - 1]) * 60 * 60;
+                    intervalParts.add(intervalArr[i - 1]);
+                    intervalParts.add(intervalArr[i]);
                 }
             }
             for (String minute : MINUTE) {
-                if (messageArr[i].equals(minute)) {
-                    interval += Integer.parseInt(messageArr[i - 1]) * 60;
-                    messagePartsWithoutInterval.remove(messageArr[i]);
-                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                if (intervalArr[i].equals(minute)) {
+                    temp += Integer.parseInt(intervalArr[i - 1]) * 60;
+                    intervalParts.add(intervalArr[i - 1]);
+                    intervalParts.add(intervalArr[i]);
                 }
             }
             for (String second : SECOND) {
-                if (messageArr[i].equals(second)) {
-                    interval += Integer.parseInt(messageArr[i - 1]);
-                    messagePartsWithoutInterval.remove(messageArr[i]);
-                    messagePartsWithoutInterval.remove(messageArr[i - 1]);
+                if (intervalArr[i].equals(second)) {
+                    temp += Integer.parseInt(intervalArr[i - 1]);
+                    intervalParts.add(intervalArr[i - 1]);
+                    intervalParts.add(intervalArr[i]);
                 }
             }
+           
         }
 
-        if (interval > 0) {
-            issue.setRepeat(new Repeat(interval));
-            String resultMessage = messagePartsWithoutInterval.get(0);
-            for (int i = 1; i < messagePartsWithoutInterval.size(); i++) {
-                resultMessage += " " + messagePartsWithoutInterval.get(i - 1);
-            }
-            issue.setText(resultMessage);
+        if (timer > 0) {
+            issue.setRepeat(new Repeat(timer));
         }
         dataSource.addIssue(issue);
+        String displayMessage = "Добавлена заметка для " + issue.getAssignee(); 
         if (issue.getRepeat() != null) {
             scheduleIssue(issue);
+            displayMessage+=", напомню через";
+            String messagePart = "";
+            for (String intervalPart:intervalParts){
+                messagePart+=" "+intervalPart;
+            }
+            issue.setText(issue.getText().replace(messagePart,""));
+            displayMessage+=messagePart;
         }
-        sendMessage("Добавлена заметка для " + issue.getAssignee());
+        sendMessage(displayMessage);
     }
 
     private void listIssue(Message message) {
@@ -252,13 +283,15 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
     private String getAssignee(String message) {
-        String[] messageArr = message.split(" ");
-        String lastWord = messageArr[messageArr.length - 1];
-
-        if (lastWord.startsWith("@")) {
-            return lastWord.substring(1);
+        java.util.regex.Matcher matcher = assigneePattern.matcher(message);
+        String assignee = null;
+        while (matcher.find()){
+            if (assignee!=null){
+                throw new RuntimeException("More than one assignee");
+            }
+            assignee = matcher.group(0);
         }
-        return null;
+        return assignee;
     }
 
     private boolean startWith(String[] commands, String message) {
@@ -303,7 +336,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
     private static String formatIssue(Issue issue) {
-        return issue.getText() + " @" + issue.getAssignee();
+        return issue.getText() + issue.getAssignee();
     }
 
     private void scheduleIssue(Issue issue) {
