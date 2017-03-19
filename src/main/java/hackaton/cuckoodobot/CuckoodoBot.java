@@ -164,17 +164,20 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private void addIssue(Message message) {
         String messageWithAssignee = deleteCommand(message.getText());
         String assignee = getAssignee(messageWithAssignee);
-        String[] messageArr = messageWithAssignee.split(" ");
         Issue issue;
 
         String[] intervalArr;
         if (assignee != null) {
-            String messageText = messageWithAssignee.split(assignee)[0];
+            String messageText = messageWithAssignee.split("@"+assignee)[0];
             intervalArr = messageWithAssignee.split(assignee)[1].split(" ");
             issue = new Issue(groupId, messageText, assignee);
         } else {
-            issue = new Issue(groupId, messageWithAssignee);
             intervalArr = messageWithAssignee.split(" ");
+            String messageText = messageWithAssignee;
+            for (String in:IN){
+                messageText = messageText.replace(" "+in+" ","");
+            }
+            issue = new Issue(groupId, messageText);
         }
 
         int timer = 0;
@@ -244,7 +247,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             for (String intervalPart:intervalParts){
                 messagePart+=" "+intervalPart;
             }
-            issue.setText(issue.getText().replace(messagePart,""));
+            issue.setText(issue.getText().replace(messagePart.trim(),""));
             displayMessage+=messagePart;
         }
         sendMessage(displayMessage);
@@ -289,7 +292,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             if (assignee!=null){
                 throw new RuntimeException("More than one assignee");
             }
-            assignee = matcher.group(0);
+            assignee = matcher.group(0).replace("@","");
         }
         return assignee;
     }
@@ -336,7 +339,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
     private static String formatIssue(Issue issue) {
-        return issue.getText() + issue.getAssignee();
+        return issue.getText().trim() +" @"+ issue.getAssignee().trim();
     }
 
     private void scheduleIssue(Issue issue) {
