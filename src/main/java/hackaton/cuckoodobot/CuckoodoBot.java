@@ -10,7 +10,6 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.quartz.TriggerBuilder.newTrigger;
 
@@ -26,7 +25,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private final static String[] DONE = {"done", "г", "готово", "готов", "сделаль", "сделать", "сделано", "выполнено", "разделался"};
     private final static String[] DELETE = {"del", "y", "удалить", "убрать"};
     private final static String[] ASSIGNEE = {"assignee", "н", "назначить", "навесить", "перевестистрелки"};
-    private final static String[] HELP = {"help", "п", "помощь", "хелп", "памагите", "ничего не понимаю"};
+    private final static String[] HELP = {"help", "п", "помощь", "хелп", "памагите", "ничегонепонимаю"};
     private final static String[] FULLHELP = {"fullhelp", "в", "всяпомощь", "ещепомощь", "команды", "ещекоманды"};
     private final static String[] ENGLISHHELP = {"eng", "english", "englishplease"};
     private final static String[] DAY = {"day", "день"};
@@ -41,7 +40,43 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private String somethingWentWrong = "\uD83D\uDCA9 Что-то пошло не так! \uD83D\uDCA9";
     private long groupId;
 
-    private final Pattern intervalPattern = Pattern.compile("(\\d{1,2} d)?(\\d{1,2} h)?(\\d{1,2} min)?");
+    private static String helpMessage = "Привет! Я кукуду-туду-лист с напоминалками, буду куковать тебе о важных вещах, чтобы ты не забыл.\n" +
+            "Используй команду /help для помощи В)\n" +
+            "Список моих команд:\n" +
+            "   [] -- опционально. По умолчанию -- весь чат.\n" +
+            "/add - добавить задачу\n" +
+            "    /напомнить купить мяса @username\n" +
+            "    /добавить заехать за Петей\n" +
+            "/list - вывести все задачи\n" +
+            "    /список\n" +
+            "    /список @username\n" +
+            "/done - пометить задачу как готовую\n" +
+            "    /готово 1\n" +
+            "/del - удалить задачу\n" +
+            "    /удалить 1\n" +
+            "/assign - назначить задачу\n" +
+            "    /назначить 1 [@username]\n" +
+            "/help - вывести эту помощь\n" +
+            "/fullhelp - полный список команд\n" +
+            "/eng - if you speak only english, use this command. But we recommend use russian text(and fullhelp).";
+
+    private static String fullHelpMessage = "/add: добавить, задача, напомнить, д\n" +
+            "/list: список, все, всё, в\n" +
+            "/done: готово, готов, сделать, сделано, сделаль, выполнено, разделался, г\n" +
+            "/del: удалить, убрать, у\n" +
+            "/assign: назначить, навесить, перевестистрелки, н\n" +
+            "/help помощь, хелп, памагите, ничегонепонимаю, п\n" +
+            "/fullhelp: всяпомощь, ещепомощь, команды, ещекоманды, в\n" +
+            "/eng: english, englishplease";
+
+    private static String enghelpMessage = "add - add an issue\n" +
+            "list - view a list with all issues\n" +
+            "done - mark the issue as done by id\n" +
+            "del - delete the issue by id\n" +
+            "assign - assign issue\n" +
+            "help - print help\n" +
+            "fullhelp - print full help\n" +
+            "eng - print help in english";
 
     CuckoodoBot(String botToken, Scheduler scheduler) {
         this.botToken = botToken;
@@ -76,45 +111,11 @@ public class CuckoodoBot extends TelegramLongPollingBot {
                 } else if (startWith(ASSIGNEE, messageText)) {
                     reassigneeIssue(message);
                 } else if (startWith(HELP, messageText)) {
-                    sendMessage(
-                            "Привет! Я кукуду-туду-лист с напоминалками, буду куковать тебе о важных вещах, чтобы ты не забыл.\n" +
-                                    "Используй команду /help для помощи В)\n\n" +
-                                    "Список моих команд:\n" +
-                                    "   [] -- опционально. По умолчанию -- весь чат.\n" +
-                                    "/add - добавить задачу\n" +
-                                    "    /добавить задача [@username]\n" +
-                                    "/list - вывести все задачи\n" +
-                                    "    /список\n" +
-                                    "/done - пометить задачу как готовую\n" +
-                                    "    /готово 1\n" +
-                                    "/del - удалить задачу\n" +
-                                    "    /удалить 1\n" +
-                                    "/assignee - назначить задачу\n" +
-                                    "    /назначить 1 [@username]\n" +
-                                    "/help - вывести эту помощь\n" +
-                                    "/fullhelp - полный список команд\n" +
-                                    "/eng - if you speak only english, use this command. But we are recommend use russian text(and fullhelp)!\n"
-                    );
+                    sendMessage(helpMessage);
                 } else if (startWith(FULLHELP, messageText)) {
-                    String full = "добавить: задача, еще, д, add, a\n" +
-                            "list: список, все, всё, l\n" +
-                            "done: готово, готов, сделать, сделано, сделаль, выполнено, разделался, г\n" +
-                            "del: удалить, убрать, у\n" +
-                            "assignee: назначить, навесить, перевестистрелки, н\n" +
-                            "help: помощь, хелп, памагите, ничегонепонимаю, п\n" +
-                            "fullhelp: всяпомощь, ещепомощь, команды, ещекоманды, в\n" +
-                            "eng: english, englishplease";
-                    sendMessage(full);
+                    sendMessage(fullHelpMessage);
                 } else if (startWith(ENGLISHHELP, messageText)) {
-                    String enghelp = "add - add a issue\n" +
-                            "list - view a list with all issues\n" +
-                            "done - mark issue as done\n" +
-                            "del - delete issue\n" +
-                            "assignee - assignee issue\n" +
-                            "help - print help\n" +
-                            "fullhelp - print full help\n" +
-                            "eng - print help in english";
-                    sendMessage(enghelp);
+                    sendMessage(enghelpMessage);
                 } else {
                     sendMessage("Нет такой команды! /help");
                 }
@@ -219,9 +220,17 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
     private void listIssue(Message message) {
-        List<Issue> issues = dataSource.getIssueForGroup(groupId);
+        String text = deleteCommand(message.getText()).trim();
+        String assignee = getAssignee(text);
+        List<Issue> issues;
+        if (assignee != null) {
+            issues = dataSource.getAllIssueForUser(assignee, groupId);
+        } else {
+            issues = dataSource.getIssueForGroup(groupId);
+        }
+
         if (issues.size() == 0) {
-            sendMessage("Задач нет! Используй /help.");
+            sendMessage("Задач нет!");
         } else {
             StringBuilder res = new StringBuilder();
             int idx = 0;

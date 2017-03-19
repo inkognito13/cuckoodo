@@ -90,4 +90,19 @@ public class DataSource {
         return false;
     }
 
+    ArrayList<Issue> getAllIssueForUser(String username, long groupId) {
+        ArrayList<Issue> res = new ArrayList<Issue>();
+        if (storage.containsKey(groupId)) {
+            Map<Long, Issue> groupMessages = storage.get(groupId);
+
+            for (Issue issue : groupMessages.values()) {
+                if (issue.getAssignee().toLowerCase().equals(username.toLowerCase())) {
+                    res.add(issue);
+                }
+            }
+        }
+
+        return res;
+    }
+
 }
