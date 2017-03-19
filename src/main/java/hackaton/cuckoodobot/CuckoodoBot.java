@@ -21,23 +21,24 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class CuckoodoBot extends TelegramLongPollingBot {
 
-    private final static String[] ADD = {"add", "д", "добавить", "задача", "еще","напомни"};
-    private final static String[] LIST = {"list", "c", "список", "все", "всё"};
+    private final static String botUsername = "cuckoodobot";
+    private final static String[] ADD = {"add", "д", "добавить", "задача", "еще", "напомни"};
+    private final static String[] LIST = {"list", "list@" + botUsername, "c", "список", "все", "всё"};
     private final static String[] DONE = {"done", "г", "готово", "готов", "сделаль", "сделать", "сделано", "выполнено", "разделался"};
     private final static String[] DELETE = {"del", "y", "удалить", "убрать"};
     private final static String[] ASSIGNEE = {"assignee", "н", "назначить", "навесить", "перевестистрелки"};
-    private final static String[] HELP = {"help", "п", "помощь", "хелп", "памагите", "ничегонепонимаю"};
-    private final static String[] FULLHELP = {"fullhelp", "в", "всяпомощь", "ещепомощь", "команды", "ещекоманды"};
-    private final static String[] ENGLISHHELP = {"eng", "english", "englishplease"};
+    private final static String[] HELP = {"help", "help@" + botUsername, "п", "помощь", "хелп", "памагите", "ничегонепонимаю"};
+    private final static String[] FULLHELP = {"fullhelp", "fullhelp@" + botUsername, "в", "всяпомощь", "ещепомощь", "команды", "ещекоманды"};
+    private final static String[] ENGLISHHELP = {"eng", "eng@" + botUsername, "english", "englishplease"};
     private final static String[] DAY = {"day", "день"};
     private final static String[] HOUR = {"hour", "час"};
     private final static String[] MINUTE = {"min", "минут","минуту","минуты"};
     private final static String[] SECOND = {"sec", "секунд", "секунду","секунды"};
     private final static String[] IN = {"in","after","через"};
     private final static String[] EVERY = {"every","каждые"};
-    
+
     private final static Pattern assigneePattern = Pattern.compile("@([A-Za-z])\\w+");
-    
+
 
     private String botToken;
     private Scheduler scheduler;
@@ -96,7 +97,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     }
 
     public String getBotUsername() {
-        return "cuckodoobot";
+        return "cuckoodobot";
     }
 
     public void onUpdateReceived(Update update) {
@@ -182,10 +183,10 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
         int timer = 0;
         int interval = 0;
-        
+
         boolean timerFound = false;
         boolean intervalFound = false;
-        
+
         int temp = 0;
 
         List<String> intervalParts = new ArrayList<String>();
@@ -232,14 +233,14 @@ public class CuckoodoBot extends TelegramLongPollingBot {
                     intervalParts.add(intervalArr[i]);
                 }
             }
-           
+
         }
 
         if (timer > 0) {
             issue.setRepeat(new Repeat(timer));
         }
         dataSource.addIssue(issue);
-        String displayMessage = "Добавлена заметка для " + issue.getAssignee(); 
+        String displayMessage = "Добавлена заметка для " + issue.getAssignee();
         if (issue.getRepeat() != null) {
             scheduleIssue(issue);
             displayMessage+=", напомню через";
