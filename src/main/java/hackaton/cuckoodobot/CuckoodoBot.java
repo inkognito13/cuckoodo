@@ -44,7 +44,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
     private Scheduler scheduler;
     private static DataSource dataSource;
     private static CuckoodoBot bot;
-    private String somethingWentWrong = "\uD83D\uDCA9 Что-то пошло не так! \uD83D\uDCA9";
+    private String somethingWentWrong = "\uD83D\uDCA9 Что-то пошло не так!";
     private long groupId;
 
     private static String helpMessage = "Привет! Я кукуду-туду-лист с напоминалками, буду куковать тебе о важных вещах, чтобы ты не забыл.\n" +
@@ -146,7 +146,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         int idx = Integer.parseInt(text);
 
         if (dataSource.assigneeIssue(idx, assignee, groupId)) {
-            sendMessage("Задача " + idx + " назначена на " + assignee);
+            sendMessage("Задача " + idx + " назначена на @" + assignee);
         } else {
             sendMessage(somethingWentWrong);
         }
@@ -240,7 +240,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             issue.setRepeat(new Repeat(timer));
         }
         dataSource.addIssue(issue);
-        String displayMessage = "Добавлена заметка для " + issue.getAssignee();
+        String displayMessage = "Добавлена заметка для @" + issue.getAssignee();
         if (issue.getRepeat() != null) {
             scheduleIssue(issue);
             displayMessage+=", напомню через";
