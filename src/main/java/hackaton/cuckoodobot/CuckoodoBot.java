@@ -128,6 +128,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
                 }
             } catch (Exception e) {
                 System.err.println(e.toString());
+                e.printStackTrace();
                 sendMessage(somethingWentWrong + "\n\rПопробуй еще раз.");
             }
         }
@@ -169,8 +170,14 @@ public class CuckoodoBot extends TelegramLongPollingBot {
 
         String[] intervalArr;
         if (assignee != null) {
-            String messageText = messageWithAssignee.split("@"+assignee)[0];
-            intervalArr = messageWithAssignee.split(assignee)[1].split(" ");
+            String[] arr = messageWithAssignee.split("@"+assignee);
+            String messageText = arr[0];
+            if (arr.length>1){
+                intervalArr = arr[1].split(" ");    
+            }else{
+                intervalArr = new String[0];
+            }
+            
             issue = new Issue(groupId, messageText, assignee);
         } else {
             intervalArr = messageWithAssignee.split(" ");
