@@ -43,14 +43,11 @@ Elastic Telegram task-manager/reminder for chats
 
   `/done <id>`
 
-  10. user get a list of issues (all ids SHOUL BE present)
-  11. user set the issue's type as 'Done
-
-#### User story #5:
+### User story #5:
   User could delete issue.  
   `/delete 1` 
   
-#### User story #6:
+### User story #6:
   User wants to fix a typo in the issue's body.  
   User should remove the issue by <id> and create it again.
 
@@ -68,15 +65,15 @@ Elastic Telegram task-manager/reminder for chats
    30. user change the body of the specific issue by id
 
 ### User story #7:
-    User able to get help
+  User able to get help
      
-     '/help'
+  `/help`
 
 ### User story #8:
-     User able to add a reminder 
+  User able to add a reminder 
      
-     '/add do sometning 2 min @vasya'
+  `/add do sometning 2 min @vasya`
      
 ### User story #9 
-     User able to use autocomplete for list and help commands
+  User able to use autocomplete for list and help commands
      
