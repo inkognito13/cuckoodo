@@ -11,24 +11,22 @@ public class Issue {
     private Long groupId;
     private String text;
     private String assignee;
-    private Repeat repeat;
+    private Reminder reminder;
     private Boolean isDone;
 
     public Issue(Long groupId, String text) {
-        this.id = System.currentTimeMillis();
         this.groupId = groupId;
         this.text = text;
         this.assignee = "all";
-        this.repeat = null;
+        this.reminder = null;
         this.isDone = false;
     }
 
     public Issue(Long groupId, String text, String assignee) {
-        this.id = System.currentTimeMillis();
         this.groupId = groupId;
         this.text = text;
         this.assignee = assignee;
-        this.repeat = null;
+        this.reminder = null;
         this.isDone = false;
     }
 
@@ -65,16 +63,16 @@ public class Issue {
         this.assignee = assignee;
     }
 
-    public Repeat getRepeat() {
-        return repeat;
+    public Reminder getReminder() {
+        return reminder;
     }
 
-    public void setRepeat(Repeat repeat) {
-        this.repeat = repeat;
+    public void setReminder(Reminder reminder) {
+        this.reminder = reminder;
     }
 
     public boolean schedulable() {
-        return repeat != null;
+        return reminder != null;
     }
 
     public Boolean getDone() {

@@ -7,9 +7,8 @@ import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.Calendar;
 import java.util.regex.*;
 
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -85,10 +84,10 @@ public class CuckoodoBot extends TelegramLongPollingBot {
             "fullhelp - print full help\n" +
             "eng - print help in english";
 
-    CuckoodoBot(String botToken, Scheduler scheduler) {
+    CuckoodoBot(String botToken, Scheduler scheduler,DataSource dataSource) {
         this.botToken = botToken;
         this.scheduler = scheduler;
-        dataSource = new DataSource();
+        this.dataSource = dataSource;
         bot = this;
     }
 
@@ -244,11 +243,13 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         }
 
         if (timer > 0) {
-            issue.setRepeat(new Repeat(timer));
+            Calendar target = Calendar.getInstance();
+            target.setTimeInMillis(timer*1000);
+            issue.setReminder(new Reminder(target));
         }
         dataSource.addIssue(issue);
         String displayMessage = "Добавлена заметка для @" + issue.getAssignee();
-        if (issue.getRepeat() != null) {
+        if (issue.getReminder() != null) {
             scheduleIssue(issue);
             displayMessage+=", напомню через";
             String messagePart = "";
@@ -359,7 +360,7 @@ public class CuckoodoBot extends TelegramLongPollingBot {
         Trigger trigger = newTrigger()
                 .withIdentity(new TriggerKey(issue.getId().toString(), issue.getGroupId().toString()))
                 .forJob(jobDetail)
-                .startAt(DateBuilder.futureDate(issue.getRepeat().getTime(), DateBuilder.IntervalUnit.SECOND))
+                .startAt(issue.getReminder().getTarget().getTime())
                 .build();
 
         try {
